@@ -171,7 +171,7 @@ SecurityEvent
 | project TimeGenerated, Account, Computer, Activity
 | sort by TimeGenerated desc
 ```
-![Admin Group Membership Change Detection](images/admin_Group_membership_change_detection.png)
+![Admin Group Membership Change Detection](images/admin_group_membership_change_detection.png)
 
 No events were detected during the testing window in the lab environment.
 

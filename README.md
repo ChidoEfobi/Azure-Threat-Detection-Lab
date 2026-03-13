@@ -70,7 +70,7 @@ SecurityEvent
 | where CommandLine contains "-EncodedCommand"
 | project TimeGenerated, Computer, Account, Process, CommandLine
 ```
-![Encoded PowerShell Execution Detection](images/encoded_powerShell_execution_detection.png)
+![Encoded PowerShell Execution Detection](images/encoded_powershell_execution_detection.png)
 
 # 3) Suspicious Parent Process Detection
 

@@ -75,7 +75,7 @@ SecurityEvent
 ### Detection Output
 ![Brute Force Detection](images/brute_force_login_detection.png)
 
-# Detection 2 — Encoded PowerShell Execution
+## Detection 2 — Encoded PowerShell Execution
 
 **`MITRE ATT&CK:`** T1059 – Command and Scripting Interpreter (PowerShell)
 
@@ -86,7 +86,7 @@ SecurityEvent
 **`Event ID:`** 4688 – Process Creation
 
 
-## Detection Logic
+### Detection Logic
 ```kql
 SecurityEvent
 | where EventID == 4688
@@ -95,13 +95,13 @@ SecurityEvent
 | project TimeGenerated, Computer, Account, Process, CommandLine
 ```
 
-## Detection Output
+### Detection Output
 
 
 ![Encoded PowerShell Detection](images/encoded_powershell_execution_detection.png)
 
 
-# Detection 3 — Suspicious Parent Process Execution
+## Detection 3 — Suspicious Parent Process Execution
 
 **`MITRE ATT&CK:`** T1059 – Command Execution
 
@@ -111,7 +111,7 @@ SecurityEvent
 
 **`Event ID:`** 4688 – Process Creation
 
-## Detection Logic
+### Detection Logic
 
 ```kql
 SecurityEvent
@@ -121,12 +121,12 @@ SecurityEvent
 | project TimeGenerated, Computer, Process, ParentProcessName, Account
 ```
 
-## Detection Output
+### Detection Output
 
 ![Suspicious Parent Process](images/suspicious_parent_process_detection.png)
 
 
-# Detection 4 — Network Beaconing Activity
+## Detection 4 — Network Beaconing Activity
 
 **`MITRE ATT&CK:`** T1071 – Application Layer Protocol
 
@@ -136,7 +136,7 @@ SecurityEvent
 
 **`Event ID:`** 3 – Network Connection
 
-## Detection Logic
+### Detection Logic
 
 ```kql
 Event
@@ -146,12 +146,12 @@ Event
 | where Connections > 20
 ```
 
-## Detection Output
+### Detection Output
 
 ![Network Beaconing Detection](images/network_beaconing_detection.png)
 
 
-# Detection 5 — Privileged Logon Activity
+## Detection 5 — Privileged Logon Activity
 
 **`MITRE ATT&CK:`** T1078 – Valid Accounts
 
@@ -161,7 +161,7 @@ Event
 
 **`Event ID:`** 4672 – Special Privileges Assigned to New Logon
 
-## Detection Logic
+### Detection Logic
 
 ```kql
 SecurityEvent
@@ -170,11 +170,11 @@ SecurityEvent
 | sort by TimeGenerated desc
 ```
 
-## Detection Output
+### Detection Output
 
 ![Privileged Logon Detection](images/privileged_logon_detection.png)
 
-# Detection 6 — Scheduled Task Persistence
+## Detection 6 — Scheduled Task Persistence
 
 **`MITRE ATT&CK:`** T1053 – Scheduled Task / Job
 
@@ -184,7 +184,7 @@ SecurityEvent
 
 **`Event ID:`** 4698 – Scheduled Task Created
 
-## Detection Logic
+### Detection Logic
 
 ```kql
 SecurityEvent
@@ -192,13 +192,13 @@ SecurityEvent
 | project TimeGenerated, Computer, Activity
 Detection Output
 ```
-
+### Detection Output
 
 ![Scheduled Task Detection](images/scheduled_task_persistence_detection.png)
 
 
 
-# Detection 7 — Suspicious Service Creation
+## Detection 7 — Suspicious Service Creation
 
 **`MITRE ATT&CK:`** T1543 – Create or Modify System Process
 
@@ -209,24 +209,16 @@ Detection Output
 **`Event ID:`** 4697 – Service Installed
 
 
-## Detection Logic
+### Detection Logic
 ```kql
 SecurityEvent
 | where EventID == 4697
 | project TimeGenerated, Account, Computer, Activity
 ```
 
-## Detection Output
-
-Save screenshot as:
-
-images/service_creation_detection.png
-
-Add to README:
-
 ![Service Creation Detection](images/suspicious_service_creation_detection.png)
 
-#Detection 8 — Remote Desktop Logon Detection
+## Detection 8 — Remote Desktop Logon Detection
 
 **`MITRE ATT&CK:`** T1021 – Remote Services
 
@@ -238,7 +230,7 @@ Add to README:
 
 **`LogonType:`** 10
 
-## Detection Logic
+### Detection Logic
 
 ```kql
 SecurityEvent
@@ -248,7 +240,7 @@ SecurityEvent
 | sort by TimeGenerated desc
 ```
 
-## Detection Output
+### Detection Output
 
 ![RDP Logon Detection](images/remote_desktop_logon_detection.png)
 

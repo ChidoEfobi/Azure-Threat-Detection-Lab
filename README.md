@@ -3,23 +3,33 @@
 
 ## Overview
 
-This project demonstrates a cloud **`threat detection engineering workflow`** using Microsoft Sentinel and Azure Log Analytics.
+This project demonstrates a **cloud threat detection engineering workflow** using Microsoft Sentinel and Azure Log Analytics.
 
-The goal of the lab was to simulate attacker behaviors on a Windows virtual machine and build detection queries capable of identifying suspicious activity.
+The objective of this project was to simulate attacker behaviors on a Windows virtual machine and develop detection logic capable of identifying malicious activity using **Kusto Query Language (KQL)**.
 
-Telemetry is collected using **Windows Security Events** and ingested into Azure through the **`Azure Monitor Agent (AMA)`**. The logs are analyzed using **Kusto Query Language (KQL)** to detect attacker techniques.
+Telemetry is collected using **Windows Security Events** and forwarded to Azure via the **Azure Monitor Agent (AMA)**. The events are then analyzed within **Microsoft Sentinel** to build and validate threat detections mapped to **MITRE ATT&CK techniques**.
 
-The project demonstrates how detection engineers convert raw telemetry into actionable detections mapped to **MITRE ATT&CK techniques**.
+This project demonstrates a typical **detection engineering lifecycle**:
+
+1. Simulate attacker behavior
+2. Collect security telemetry
+3. Develop detection logic
+4. Validate detection queries
+5. Convert detections into Sentinel analytics rules
 
 ---
 
 # Lab Architecture
 
+The lab environment consists of an Azure Windows virtual machine generating security telemetry that is collected and analyzed through Microsoft Sentinel.
+
+## Telemetry flow:
+
 Internet Traffic  
 ↓  
 Azure Windows Virtual Machine  
 ↓  
-Windows Security Events  
+Windows Security Event Logs  
 ↓  
 Azure Monitor Agent (AMA)  
 ↓  
@@ -30,39 +40,53 @@ Microsoft Sentinel
 Threat Detection Queries
 
 
----
 
-# Detection Engineering
 
-The following detections were developed using **KQL** and validated against telemetry generated in the lab environment.
 
----
+# Detection Engineering Methodology
 
-# 1️) Brute Force Login Detection
+Each detection in this project follows a structured workflow used by detection engineers:
 
-**MITRE ATT&CK:** T1110 – Brute Force
+Threat Scenario – Adversary technique being simulated
+Telemetry Source – Windows event logs used for detection
+Detection Logic – KQL query used to identify suspicious behavior
+Validation – Attack simulation used to generate telemetry
+Detection Output – Evidence that the detection works
 
-This detection identifies excessive failed login attempts that may indicate password spraying or brute force authentication attacks.
+## Detection 1 — Brute Force Login Detection
 
-## Detection Query
+**`MITRE ATT&CK:`** T1110 – Brute Force
 
-```kql
+**`Threat Scenario:`** Attackers often attempt to gain access to systems through repeated authentication attempts against user accounts.
+
+**`Telemetry Source:`** Windows Security Event Log
+
+**`Event ID:`** 4625 – Failed Logon Attempt
+
+### Detection Logic
+```KQL
 SecurityEvent
 | where EventID == 4625
 | summarize FailedAttempts=count() by Account, Computer, bin(TimeGenerated, 5m)
 | where FailedAttempts > 5
 | sort by FailedAttempts desc
 ```
-![Brute Force Login Detection](images/brute_force_login_detection.png)
 
-# 2) Encoded PowerShell Execution Detection
+### Detection Output
+![Brute Force Detection](images/brute_force_login_detection.png)
 
-**MITRE ATT&CK:**  T1059 – Command and Scripting Interpreter (PowerShell)
+# Detection 2 — Encoded PowerShell Execution
 
-Attackers frequently execute PowerShell using encoded commands to hide malicious payloads.
+**`MITRE ATT&CK:`** T1059 – Command and Scripting Interpreter (PowerShell)
 
-## Detection Query
+**`Threat Scenario:`** Attackers frequently execute PowerShell using encoded commands to obfuscate malicious scripts and evade detection.
 
+**`Telemetry Source:`**: Windows Security Event Log
+
+**`Event ID:`** 4688 – Process Creation
+
+
+## Detection Logic
 ```kql
 SecurityEvent
 | where EventID == 4688
@@ -70,15 +94,24 @@ SecurityEvent
 | where CommandLine contains "-EncodedCommand"
 | project TimeGenerated, Computer, Account, Process, CommandLine
 ```
-![Encoded PowerShell Execution Detection](images/encoded_powershell_execution_detection.png)
 
-# 3) Suspicious Parent Process Detection
+## Detection Output
 
-**MITRE ATT&CK:** T1059 – Command Execution
 
-This detection identifies PowerShell processes launched from unusual parent processes.
+![Encoded PowerShell Detection](images/encoded_powershell_execution_detection.png)
 
-## Detection Query
+
+# Detection 3 — Suspicious Parent Process Execution
+
+**`MITRE ATT&CK:`** T1059 – Command Execution
+
+**`Threat Scenario:`** Attackers may spawn PowerShell from unusual parent processes such as cmd.exe or wmic.exe to execute malicious commands.
+
+**`Telemetry Source:`** Windows Security Event Log
+
+**`Event ID:`** 4688 – Process Creation
+
+## Detection Logic
 
 ```kql
 SecurityEvent
@@ -88,17 +121,22 @@ SecurityEvent
 | project TimeGenerated, Computer, Process, ParentProcessName, Account
 ```
 
-![Suspicious Parent Process Detection](images/suspicious_parent_process_detection.png)
+## Detection Output
 
-Unusual parent processes launching PowerShell may indicate attacker activity such as command execution or malware activity.
+![Suspicious Parent Process](images/suspicious_parent_process_detection.png)
 
-# 4) Network Beaconing Detection
 
-**MITRE ATT&CK:** T1071 – Application Layer Protocol
+# Detection 4 — Network Beaconing Activity
 
-Command-and-control malware often communicates with external infrastructure at regular intervals.
+**`MITRE ATT&CK:`** T1071 – Application Layer Protocol
 
-## Detection Query
+**`Threat Scenario:`** Malware commonly communicates with command-and-control servers using frequent outbound connections.
+
+**`Telemetry Source:`** Sysmon Network Connection Logs
+
+**`Event ID:`** 3 – Network Connection
+
+## Detection Logic
 
 ```kql
 Event
@@ -106,19 +144,24 @@ Event
 | where EventID == 3
 | summarize Connections=count() by Computer, bin(TimeGenerated, 1m)
 | where Connections > 20
-| sort by Connections desc
 ```
+
+## Detection Output
+
 ![Network Beaconing Detection](images/network_beaconing_detection.png)
 
-This detection identifies hosts generating unusually frequent outbound network connections.
 
-# 5️) Privileged Logon Detection
+# Detection 5 — Privileged Logon Activity
 
-**MITRE ATT&CK:** T1078 – Valid Accounts
+**`MITRE ATT&CK:`** T1078 – Valid Accounts
 
-Event ID 4672 indicates that special administrative privileges were assigned to a user account.
+**`Threat Scenario:`** Attackers may leverage privileged accounts to escalate privileges or perform administrative actions.
 
-## Detection Query
+**`Telemetry Source:`** Windows Security Event Log
+
+**`Event ID:`** 4672 – Special Privileges Assigned to New Logon
+
+## Detection Logic
 
 ```kql
 SecurityEvent
@@ -127,134 +170,129 @@ SecurityEvent
 | sort by TimeGenerated desc
 ```
 
-![Privileged Logon Detection](images/privileged_logon_detection.png)
-
-Example accounts observed in the lab:
-
-NT AUTHORITY\SYSTEM
-
-VIRTUAL USERS\sshd_4024
+## Detection Output
 
 ![Privileged Logon Detection](images/privileged_logon_detection.png)
 
-# 6️) Scheduled Task Persistence Detection
+# Detection 6 — Scheduled Task Persistence
 
-**MITRE ATT&CK:** T1053 – Scheduled Task / Job
+**`MITRE ATT&CK:`** T1053 – Scheduled Task / Job
 
-Attackers often create scheduled tasks to maintain persistence.
+**`Threat Scenario:`** Attackers create scheduled tasks to maintain persistence within compromised systems.
 
-## Detection Query
+**`Telemetry Source:`** Windows Security Event Log
+
+**`Event ID:`** 4698 – Scheduled Task Created
+
+## Detection Logic
 
 ```kql
 SecurityEvent
 | where EventID == 4698
 | project TimeGenerated, Computer, Activity
-| sort by TimeGenerated desc
+Detection Output
 ```
-![Scheduled Task Persistence Detection](images/scheduled_task_persistence_detection.png)
 
-Example event detected:
 
-4698 – A scheduled task was created
+![Scheduled Task Detection](images/scheduled_task_persistence_detection.png)
 
-# 7️) Admin Group Membership Change Detection
 
-**MITRE ATT&CK:** T1098 – Account Manipulation
 
-This detection identifies accounts added to privileged security groups.
+# Detection 7 — Suspicious Service Creation
 
-## Detection Query
+**`MITRE ATT&CK:`** T1543 – Create or Modify System Process
 
-```kql
-SecurityEvent
-| where EventID == 4732
-| project TimeGenerated, Account, Computer, Activity
-| sort by TimeGenerated desc
-```
-![Admin Group Membership Change Detection](images/admin_group_membership_change_detection.png)
+**`Threat Scenario:`** Attackers may install malicious services to execute malware or maintain persistence.
 
-No events were detected during the testing window in the lab environment.
+**`Telemetry Source:`** Windows Security Event Log
 
-# 8️) Suspicious Service Creation Detection
+**`Event ID:`** 4697 – Service Installed
 
-**MITRE ATT&CK:** T1543 – Create or Modify System Process
 
-Attackers often create Windows services to execute malware or maintain persistence.
-
-## Detection Query
-
+## Detection Logic
 ```kql
 SecurityEvent
 | where EventID == 4697
 | project TimeGenerated, Account, Computer, Activity
-| sort by TimeGenerated desc
 ```
-![Suspicious Service Creation Detection](images/suspicious_service_creation_detection.png)
 
-Example event observed:
+## Detection Output
 
-4697 – A service was installed in the system
+Save screenshot as:
 
-Account observed:
+images/service_creation_detection.png
 
-WORKGROUP\vm-chido-lab-ca$
+Add to README:
 
+![Service Creation Detection](images/service_creation_detection.png)
 
-# 9️) Remote Desktop Logon Detection
+#Detection 8 — Remote Desktop Logon Detection
 
-**MITRE ATT&CK:** T1021 – Remote Services
+**`MITRE ATT&CK:`** T1021 – Remote Services
 
-This detection identifies successful Remote Desktop Protocol (RDP) logons.
+**`Threat Scenario:`** Attackers frequently use Remote Desktop Protocol (RDP) for remote access and lateral movement.
 
-## Detection Query
+**`Telemetry Source:`** Windows Security Event Log
+
+**`Event ID:`** 4624 – Successful Logon
+
+**`LogonType:`** 10
+
+## Detection Logic
 
 ```kql
 SecurityEvent
 | where EventID == 4624
 | where LogonType == 10
 | project TimeGenerated, Account, Computer, IpAddress
-| sort by TimeGenerated desc
 ```
-![Remote Desktop Logon Detection](images/remote_desktop_logon_detection.png)
 
-Example event observed:
+## Detection Output
 
-Account:
+![RDP Logon Detection](images/remote_desktop_logon_detection.png)
 
-vm-chido-lab-ca\chidoazurelab
 
-Source IP:
+# Microsoft Sentinel Analytics Rule
 
-206.x.x.x
+Detection queries were converted into Sentinel analytics rules to generate alerts automatically.
 
-# Microsoft Sentinel Detection Rule
+![Sentinel Detection Rule](images/sentinel_detection_rule.png)
 
-An analytics rule was created in Microsoft Sentinel to convert detection queries into automated alerts.
 
-# Microsoft Sentinel Incident Example
+# Sentinel Incident Investigation
 
-When detection rules trigger, Microsoft Sentinel generates security incidents for investigation.
+When detections trigger, Microsoft Sentinel generates security incidents for investigation.
+
+![Sentinel Incident](images/sentinel_incidents.png)
+
 
 # Skills Demonstrated
 
-- Cloud security monitoring
+- Threat Detection Engineering
 
-- Threat detection engineering
+- Microsoft Sentinel SIEM
 
-- Microsoft Sentinel analytics rule creation
+- Kusto Query Language (KQL)
 
-- KQL threat hunting
+- MITRE ATT&CK Mapping
 
-- MITRE ATT&CK mapping
+- Windows Security Log Analysis
 
-- Windows security log analysis
+- Cloud Security Monitoring
 
-- Attack simulation and detection validation
+- Attack Simulation and Detection Validation
 
-# Conclusion
+# Key Takeaways
 
-This lab demonstrates the process of building practical threat detections in Microsoft Sentinel using real Windows telemetry.
+This project demonstrates how detection engineers transform raw telemetry into actionable threat detections using Microsoft Sentinel.
 
-The project simulates attacker behaviors and develops KQL detections mapped to MITRE ATT&CK techniques commonly used by adversaries.
+The detections developed in this lab simulate real attacker behaviors and demonstrate how security teams can identify malicious activity through structured log analysis and detection engineering practices.
 
-It highlights how detection engineers transform raw telemetry into actionable security monitoring capabilities.
+
+
+
+
+
+
+
+

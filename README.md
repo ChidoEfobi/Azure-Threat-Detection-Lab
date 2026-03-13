@@ -1,4 +1,5 @@
 # Azure Threat Detection Lab
+![Lab Architecture](images/lab_architecture.png)
 
 ## Overview
 
@@ -28,7 +29,6 @@ Microsoft Sentinel
 ↓  
 Threat Detection Queries
 
-![Lab Architecture](images/lab_architecture.png)
 
 ---
 
@@ -53,6 +53,7 @@ SecurityEvent
 | where FailedAttempts > 5
 | sort by FailedAttempts desc
 ```
+![Brute Force Login Detection](images/brute_force_login_detection.png)
 
 # 2) Encoded PowerShell Execution Detection
 
@@ -69,7 +70,7 @@ SecurityEvent
 | where CommandLine contains "-EncodedCommand"
 | project TimeGenerated, Computer, Account, Process, CommandLine
 ```
-
+![Encoded PowerShell Execution Detection](images/encoded_powerShell_execution_detection.png)
 
 # 3) Suspicious Parent Process Detection
 
@@ -86,6 +87,9 @@ SecurityEvent
 | where ParentProcessName !contains "explorer.exe"
 | project TimeGenerated, Computer, Process, ParentProcessName, Account
 ```
+
+![Suspicious Parent Process Detection](images/suspicious_parent_process_detection.png)
+
 Unusual parent processes launching PowerShell may indicate attacker activity such as command execution or malware activity.
 
 # 4) Network Beaconing Detection
@@ -104,6 +108,7 @@ Event
 | where Connections > 20
 | sort by Connections desc
 ```
+![Network Beaconing Detection](images/network_beaconing_detection.png)
 
 This detection identifies hosts generating unusually frequent outbound network connections.
 
@@ -121,11 +126,16 @@ SecurityEvent
 | project TimeGenerated, Account, Computer
 | sort by TimeGenerated desc
 ```
+
+![Privileged Logon Detection](images/privileged_logon_detection.png)
+
 Example accounts observed in the lab:
 
 NT AUTHORITY\SYSTEM
 
 VIRTUAL USERS\sshd_4024
+
+![Privileged Logon Detection](images/privileged_logon_detection.png)
 
 # 6️) Scheduled Task Persistence Detection
 
@@ -141,6 +151,8 @@ SecurityEvent
 | project TimeGenerated, Computer, Activity
 | sort by TimeGenerated desc
 ```
+![Scheduled Task Persistence Detection](images/scheduled_task_persistence_detection.png)
+
 Example event detected:
 
 4698 – A scheduled task was created
@@ -159,6 +171,7 @@ SecurityEvent
 | project TimeGenerated, Account, Computer, Activity
 | sort by TimeGenerated desc
 ```
+![Admin Group Membership Change Detection](images/admin_Group_membership_change_detection.png)
 
 No events were detected during the testing window in the lab environment.
 
@@ -176,6 +189,7 @@ SecurityEvent
 | project TimeGenerated, Account, Computer, Activity
 | sort by TimeGenerated desc
 ```
+![Suspicious Service Creation Detection](images/suspicious_service_creation_detection.png)
 
 Example event observed:
 
@@ -185,18 +199,23 @@ Account observed:
 
 WORKGROUP\vm-chido-lab-ca$
 
-9️⃣ Remote Desktop Logon Detection
 
-MITRE ATT&CK: T1021 – Remote Services
+# 9️) Remote Desktop Logon Detection
+
+**MITRE ATT&CK:** T1021 – Remote Services
 
 This detection identifies successful Remote Desktop Protocol (RDP) logons.
 
-Detection Query
+## Detection Query
+
+```kql
 SecurityEvent
 | where EventID == 4624
 | where LogonType == 10
 | project TimeGenerated, Account, Computer, IpAddress
 | sort by TimeGenerated desc
+```
+![Remote Desktop Logon Detection](images/remote_desktop_logon_detection.png)
 
 Example event observed:
 

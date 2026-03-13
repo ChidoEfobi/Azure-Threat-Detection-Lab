@@ -224,7 +224,7 @@ images/service_creation_detection.png
 
 Add to README:
 
-![Service Creation Detection](images/service_creation_detection.png)
+![Service Creation Detection](images/suspicious_service_creation_detection.png)
 
 #Detection 8 — Remote Desktop Logon Detection
 
@@ -245,6 +245,7 @@ SecurityEvent
 | where EventID == 4624
 | where LogonType == 10
 | project TimeGenerated, Account, Computer, IpAddress
+| sort by TimeGenerated desc
 ```
 
 ## Detection Output

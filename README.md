@@ -251,6 +251,7 @@ Detection queries were converted into Sentinel analytics rules to generate alert
 
 ![Sentinel Detection Rule](images/sentinel_detection_rule.png)
 
+![Sentinel Detection Rule 2](images/sentinel_detection_rule2.png)
 
 # Sentinel Incident Investigation
 

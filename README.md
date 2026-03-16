@@ -54,7 +54,7 @@ One of the scheduled analytics rules executed successfully but did not generate 
 
 SentinelHealth logs indicated that the rule executed but the alert threshold was not reached.
 
-**Resolution**
+**Resolution:**
 
 The issue was caused by the analytics rule evaluating events outside of the query time window. The detection query was updated to explicitly filter for recent events using:
 
@@ -67,11 +67,11 @@ This ensured that events were evaluated within the rule’s execution window.
 
 Incidents briefly appeared in the Sentinel Incidents dashboard and then disappeared.
 
-**Root Cause**
+**Root Cause:**
 
 Incidents were automatically transitioning from New to Closed, which removes them from the default Active incidents view.
 
-**Resolution**
+**Resolution:**
 
 The incident view filter was updated to display All incidents, confirming that the incidents were being closed rather than deleted.
 
@@ -79,11 +79,11 @@ The incident view filter was updated to display All incidents, confirming that t
 
 Analytics rule runs initially appeared outdated and did not show the most recent executions.
 
-**Root Cause**
+**Root Cause:**
 
 The monitoring query was filtering results using a specific CorrelationId, which only represents a single rule execution.
 
-**Resolution**
+**Resolution:**
 
 Removing the correlation filter allowed the query to display all executions for the analytics rule.
 
@@ -334,21 +334,21 @@ When detections trigger, Microsoft Sentinel generates security incidents for inv
 
 Building this Azure detection engineering lab provided several insights into how security telemetry and detection rules operate within Microsoft Sentinel.
 
-### Detection Rules Must Align With Query Time Windows
+## Detection Rules Must Align With Query Time Windows
 
 Scheduled analytics rules only evaluate events within the configured **query period**. If detection queries do not properly account for the time window, relevant events may not trigger alerts.
 
-### Public Cloud Infrastructure Receives Continuous Scanning
+## Public Cloud Infrastructure Receives Continuous Scanning
 
 Shortly after deploying the Azure virtual machine, numerous failed authentication attempts began appearing in the logs (Event ID 4625).
 
 This demonstrates how publicly accessible infrastructure is constantly scanned and targeted by automated attacks, reinforcing the importance of baseline authentication monitoring.
 
-### Entity Mapping Improves Incident Context
+## Entity Mapping Improves Incident Context
 
 Proper entity mapping enriches alerts with additional context such as user accounts, host systems, and IP addresses, which significantly improves incident investigation.
 
-### Detection Development Requires Iterative Testing
+## Detection Development Requires Iterative Testing
 
 Building effective detections requires multiple cycles of testing and tuning, including:
 
@@ -365,6 +365,33 @@ This project demonstrates how detection engineers transform raw telemetry into a
 
 The detections developed in this lab simulate real attacker behaviors and demonstrate how security teams can identify malicious activity through structured log analysis and detection engineering practices.
 
+---
+
+# Planned Enhancements
+
+This lab will continue to evolve to better simulate real-world detection engineering workflows.
+
+## Detection-as-Code
+
+The next phase of the project will explore implementing detection rules using a detection-as-code approach. This includes:
+
+- Storing detection queries in version control  
+- Managing analytics rules as code  
+- Documenting detection logic and test scenarios  
+- Enabling reproducible detection deployment
+
+This approach aligns with modern security engineering practices where detections are managed similarly to software development.
+
+## Security Automation
+
+An automation component will be added to simulate SOC workflow improvements. Planned automation features include:
+
+- Automated alert enrichment using KQL queries  
+- Basic incident triage automation  
+- Python scripts for parsing Sentinel logs and detection results  
+- Simple workflows to assist investigation tasks
+
+This will demonstrate how automation can reduce manual analyst workload and improve response time.
 
 
 

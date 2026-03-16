@@ -259,6 +259,7 @@ When detections trigger, Microsoft Sentinel generates security incidents for inv
 
 ![Sentinel Incident](images/sentinel_incidents.png)
 
+![Sentinel Incident](images/sentinel_incidents2.png)
 
 # Skills Demonstrated
 

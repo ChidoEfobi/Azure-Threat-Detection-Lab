@@ -215,7 +215,8 @@ Detection Output
 ```kql
 SecurityEvent
 | where EventID == 4697
-| project TimeGenerated, Account, Computer, Activity
+| project TimeGenerated, Account, Computer, ServiceName, Activity
+| sort by TimeGenerated desc
 ```
 
 ![Service Creation Detection](images/suspicious_service_creation_detection.png)

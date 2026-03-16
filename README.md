@@ -3,7 +3,7 @@
 
 ![Lab Architecture](images/lab_architecture.png)
 
-## Overview
+# Overview
 
 This project demonstrates a **cloud threat detection engineering workflow** using Microsoft Sentinel and Azure Log Analytics.
 
@@ -42,8 +42,52 @@ Microsoft Sentinel
 Threat Detection Queries
 
 
+---
 
+# Implementation Challenges and Troubleshooting
 
+During the implementation of this Azure detection engineering lab, several configuration and operational challenges were encountered while working with Microsoft Sentinel analytics rules and telemetry ingestion.
+
+## Analytics Rule Generated No Alerts
+
+One of the scheduled analytics rules executed successfully but did not generate any alerts or incidents.
+
+SentinelHealth logs indicated that the rule executed but the alert threshold was not reached.
+
+**Resolution**
+
+The issue was caused by the analytics rule evaluating events outside of the query time window. The detection query was updated to explicitly filter for recent events using:
+
+```kql
+| where TimeGenerated >= ago(10m)
+```
+This ensured that events were evaluated within the rule’s execution window.
+
+## Incidents Appearing and Disappearing
+
+Incidents briefly appeared in the Sentinel Incidents dashboard and then disappeared.
+
+**Root Cause**
+
+Incidents were automatically transitioning from New to Closed, which removes them from the default Active incidents view.
+
+**Resolution**
+
+The incident view filter was updated to display All incidents, confirming that the incidents were being closed rather than deleted.
+
+## Analytics Rule Runs Appearing Delayed
+
+Analytics rule runs initially appeared outdated and did not show the most recent executions.
+
+**Root Cause**
+
+The monitoring query was filtering results using a specific CorrelationId, which only represents a single rule execution.
+
+**Resolution**
+
+Removing the correlation filter allowed the query to display all executions for the analytics rule.
+
+---
 
 # Detection Engineering Methodology
 
@@ -256,6 +300,8 @@ Detection queries were converted into Sentinel analytics rules to generate alert
 
 ![Sentinel Detection Rule 2](images/sentinel_detection_rule2.png)
 
+---
+
 # Sentinel Incident Investigation
 
 When detections trigger, Microsoft Sentinel generates security incidents for investigation.
@@ -263,6 +309,8 @@ When detections trigger, Microsoft Sentinel generates security incidents for inv
 ![Sentinel Incident](images/sentinel_incidents.png)
 
 ![Sentinel Incident](images/sentinel_incidents2.png)
+
+---
 
 # Skills Demonstrated
 
@@ -279,6 +327,37 @@ When detections trigger, Microsoft Sentinel generates security incidents for inv
 - Cloud Security Monitoring
 
 - Attack Simulation and Detection Validation
+  
+---
+
+# Detection Engineering Insights
+
+Building this Azure detection engineering lab provided several insights into how security telemetry and detection rules operate within Microsoft Sentinel.
+
+### Detection Rules Must Align With Query Time Windows
+
+Scheduled analytics rules only evaluate events within the configured **query period**. If detection queries do not properly account for the time window, relevant events may not trigger alerts.
+
+### Public Cloud Infrastructure Receives Continuous Scanning
+
+Shortly after deploying the Azure virtual machine, numerous failed authentication attempts began appearing in the logs (Event ID 4625).
+
+This demonstrates how publicly accessible infrastructure is constantly scanned and targeted by automated attacks, reinforcing the importance of baseline authentication monitoring.
+
+### Entity Mapping Improves Incident Context
+
+Proper entity mapping enriches alerts with additional context such as user accounts, host systems, and IP addresses, which significantly improves incident investigation.
+
+### Detection Development Requires Iterative Testing
+
+Building effective detections requires multiple cycles of testing and tuning, including:
+
+• developing detection logic  
+• simulating attacker behavior  
+• validating telemetry visibility  
+• refining queries to reduce noise
+
+---
 
 # Key Takeaways
 
